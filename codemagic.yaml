@@ -1,0 +1,22 @@
+workflows:
+  android-workflow:
+    name: Android Capacitor Build
+    environment:
+      node: "20"
+    triggering:
+      events:
+        - push
+    scripts:
+      - name: Install npm dependencies
+        script: npm install
+      - name: Build web app
+        script: npm run build
+      - name: Sync Capacitor
+        script: npx cap sync android
+      - name: Build Android App (Debug APK)
+        script: |
+          cd android
+          chmod +x ./gradlew
+          ./gradlew assembleDebug
+    artifacts:
+      - android/app/build/outputs/**/*.apk
