@@ -1,0 +1,6 @@
+{
+  "name": "NutriSnapAI",
+  "description": "AI-powered nutrition and step tracking app",
+  "requestFramePermissions": ["accelerometer"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
