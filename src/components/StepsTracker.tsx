@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
 import { Footprints, AlertCircle, Sparkles, Loader2, RefreshCw, Smartphone, Watch, Activity, Heart, X, CheckCircle2, RotateCcw } from "lucide-react";
 import { useStore } from "../store";
+import { Pedometer } from "capacitor-pedometer";
+import { Capacitor } from "@capacitor/core";
 
 export default function StepsTracker() {
   const { stepLogs, addSteps, resetSteps, profile } = useStore();
@@ -16,61 +18,68 @@ export default function StepsTracker() {
   const [isTrackingReal, setIsTrackingReal] = useState(false);
   const [showDeviceModal, setShowDeviceModal] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
+  
+  const timerRef = useRef<any>(null);
 
-  // Real pedometer using device motion
-  const handleStartRealTracking = async () => {
-    if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
-      try {
-        const permissionState = await (DeviceMotionEvent as any).requestPermission();
-        if (permissionState === 'granted') {
-          startMotionListener();
-        } else {
-          alert('Permission for motion sensors denied.');
-        }
-      } catch (e) {
-        console.error(e);
-        startSimulation(); // fallback
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (isTrackingReal && Capacitor.isNativePlatform()) {
+        Pedometer.stop();
       }
-    } else {
-      startMotionListener();
+    };
+  }, [isTrackingReal]);
+
+  const handleStartRealTracking = async () => {
+    if (!Capacitor.isNativePlatform()) {
+      alert("Pedometer is only available on iOS/Android devices.");
+      return;
+    }
+
+    try {
+      const { available } = await Pedometer.isAvailable();
+      if (!available) {
+        alert("Pedometer sensor not available on this device.");
+        return;
+      }
+
+      await Pedometer.requestPermissions();
+      const status = await Pedometer.checkPermissions();
+      // On some platforms 'granted' isn't explicitly returned for plugins without permission implementation, but we proceed anyway
+      
+      await Pedometer.start();
+      setIsTrackingReal(true);
+      setSelectedDevice("Native Pedometer");
+
+      // Poll steps every 2 seconds
+      let lastSteps = 0;
+      timerRef.current = setInterval(async () => {
+        try {
+          const { steps } = await Pedometer.getStepCount();
+          const delta = steps - lastSteps;
+          if (delta > 0 && lastSteps !== 0) {
+            addSteps(todayStr, delta);
+          }
+          lastSteps = steps;
+        } catch (e) {
+          console.error("Error reading steps", e);
+        }
+      }, 2000);
+
+    } catch (e: any) {
+      console.error(e);
+      alert("Failed to start pedometer: " + e.message);
+      setIsTrackingReal(false);
     }
   };
 
-  const startMotionListener = () => {
-    setIsTrackingReal(true);
-    let lastZ = 0;
-    let eventsReceived = false;
-    
-    // Very basic step detection logic
-    const handleMotion = (event: DeviceMotionEvent) => {
-      const z = event.accelerationIncludingGravity?.z || 0;
-      if (z !== 0) eventsReceived = true;
-      const deltaZ = Math.abs(z - lastZ);
-      
-      // Typical step registers a spike in Z acceleration
-      if (deltaZ > 3.0 && lastZ !== 0) { 
-        addSteps(todayStr, 1);
-      }
-      lastZ = z;
-    };
-
-    window.addEventListener('devicemotion', handleMotion);
-
-    // If no events with data are received in 3 seconds, fallback to simulation
-    const fallbackTimer = setTimeout(() => {
-      if (!eventsReceived) {
-        window.removeEventListener('devicemotion', handleMotion);
-        setIsTrackingReal(false);
-        startSimulation();
-      }
-    }, 3000);
-
-    // Stop after 30 seconds for demo purposes
-    setTimeout(() => {
-      window.removeEventListener('devicemotion', handleMotion);
-      setIsTrackingReal(false);
-      clearTimeout(fallbackTimer);
-    }, 30000);
+  const handleStopRealTracking = () => {
+    setIsTrackingReal(false);
+    setSelectedDevice(null);
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (Capacitor.isNativePlatform()) {
+      Pedometer.stop().catch(console.error);
+    }
   };
 
   // Sync Pedometer fallback
@@ -89,16 +98,18 @@ export default function StepsTracker() {
   };
 
   const handleConnectPedometer = () => {
+    if (isTrackingReal) {
+      handleStopRealTracking();
+      return;
+    }
     setShowDeviceModal(true);
   };
 
   const syncDevice = (device: any) => {
     setShowDeviceModal(false);
     if (device.isNative) {
-      if (window.DeviceMotionEvent && !isSimulating) {
-        handleStartRealTracking();
-        return;
-      }
+      handleStartRealTracking();
+      return;
     }
     startSimulation(device.name);
   };
@@ -158,12 +169,13 @@ export default function StepsTracker() {
           </button>
           <button 
             onClick={handleConnectPedometer}
-            disabled={isSimulating || isTrackingReal}
+            disabled={isSimulating}
             className="text-xs bg-blue-50 text-blue-600 font-bold px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-100 disabled:opacity-50 transition-all border border-blue-100/50 shadow-sm"
           >
-            {isSimulating || isTrackingReal ? <RefreshCw size={14} className="animate-spin" /> : 
+            {isSimulating ? <RefreshCw size={14} className="animate-spin" /> : 
+             isTrackingReal ? <RefreshCw size={14} className="animate-pulse" /> :
              selectedDevice ? <CheckCircle2 size={14} className="text-green-500" /> : <Smartphone size={14} />}
-            {isTrackingReal ? "Tracking..." : isSimulating ? "Syncing..." : selectedDevice ? `Synced ${selectedDevice}` : "Connect Device"}
+            {isTrackingReal ? "Stop Tracking" : isSimulating ? "Syncing..." : selectedDevice ? `Synced ${selectedDevice}` : "Connect Device"}
           </button>
         </div>
       </div>

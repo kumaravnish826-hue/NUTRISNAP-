@@ -1,1 +1,6 @@
-[]
+[
+	{
+		"pkg": "capacitor-pedometer",
+		"classpath": "eu.greenstem.aktivan.pedometer.PedometerPlugin"
+	}
+]
