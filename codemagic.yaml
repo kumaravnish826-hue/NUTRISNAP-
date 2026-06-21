@@ -2,7 +2,7 @@ workflows:
   android-workflow:
     name: Android Capacitor Build
     environment:
-      node: "20"
+      node: "22"
     triggering:
       events:
         - push
