@@ -19,9 +19,36 @@ export default function ScannerModal({ onClose }: { onClose: () => void }) {
 
     const reader = new FileReader();
     reader.onload = async (event) => {
-      const base64Str = event.target?.result as string;
-      setPreview(base64Str);
-      await scanFood(base64Str, file.type);
+      const img = new Image();
+      img.onload = async () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+        const maxDimension = 800; // Resize to max 800px
+
+        if (width > height) {
+          if (width > maxDimension) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          }
+        } else {
+          if (height > maxDimension) {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        // Use JPEG with 0.8 quality to reduce size
+        const compressedBase64 = canvas.toDataURL("image/jpeg", 0.8);
+        setPreview(compressedBase64);
+        await scanFood(compressedBase64, "image/jpeg");
+      };
+      img.src = event.target?.result as string;
     };
     reader.readAsDataURL(file);
   };
