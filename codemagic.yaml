@@ -2,7 +2,8 @@ workflows:
   android-workflow:
     name: Android Capacitor Build
     environment:
-      node: "20"
+      node: "22"
+      java: 17
     triggering:
       events:
         - push
@@ -17,6 +18,8 @@ workflows:
         script: |
           cd android
           chmod +x ./gradlew
+          rm -rf .gradle
+          ./gradlew --version
           ./gradlew assembleDebug
     artifacts:
       - android/app/build/outputs/**/*.apk
