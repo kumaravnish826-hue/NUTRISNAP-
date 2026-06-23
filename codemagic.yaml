@@ -4,7 +4,7 @@ workflows:
     max_build_duration: 120
     instance_type: mac_mini_m2
     environment:
-      node: 22
+      node: 20
       java: 17
     triggering:
       events:
@@ -22,6 +22,8 @@ workflows:
       - name: Build Android Debug APK
         script: |
           cd android
+          # Regenerate gradle-wrapper.jar in case it was dropped by .gitignore
+          gradle wrapper
           chmod +x ./gradlew
           ./gradlew assembleDebug
     
