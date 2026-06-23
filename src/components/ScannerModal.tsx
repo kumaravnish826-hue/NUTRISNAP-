@@ -84,6 +84,7 @@ export default function ScannerModal({ onClose }: { onClose: () => void }) {
       protein: result.proteinGrams,
       carbs: result.carbsGrams,
       fats: result.fatsGrams,
+      items: result.items,
     });
     onClose();
   };

@@ -54,7 +54,7 @@ async function startServer() {
             }
           },
           {
-            text: "Analyze the food in this image with maximum precision. Identify the exact meal and ingredients with 100% accuracy. Provide a highly accurate nutritional breakdown. Return a JSON object with recipeName, calories, proteinGrams, carbsGrams, and fatsGrams."
+            text: "Analyze the food in this image with maximum precision. Identify the exact meal and ingredients with 100% accuracy. Provide a highly accurate nutritional breakdown. Also provide a detailed breakdown of the exact items and their quantities (like '2 Roti', '150g Rice', '1 Bowl Dal'). Return a JSON object with recipeName, calories, proteinGrams, carbsGrams, fatsGrams, and an items array."
           }
         ],
         config: {
@@ -66,9 +66,21 @@ async function startServer() {
               calories: { type: import_genai.Type.NUMBER, description: "Estimated total calories" },
               proteinGrams: { type: import_genai.Type.NUMBER, description: "Estimated protein in grams" },
               carbsGrams: { type: import_genai.Type.NUMBER, description: "Estimated carbs in grams" },
-              fatsGrams: { type: import_genai.Type.NUMBER, description: "Estimated fats in grams" }
+              fatsGrams: { type: import_genai.Type.NUMBER, description: "Estimated fats in grams" },
+              items: {
+                type: import_genai.Type.ARRAY,
+                description: "Detailed breakdown of the food items and their exact quantities",
+                items: {
+                  type: import_genai.Type.OBJECT,
+                  properties: {
+                    name: { type: import_genai.Type.STRING, description: "Name of the item (e.g., Roti, Rice)" },
+                    quantity: { type: import_genai.Type.STRING, description: "Quantity (e.g., 2 pieces, 150g)" }
+                  },
+                  required: ["name", "quantity"]
+                }
+              }
             },
-            required: ["recipeName", "calories", "proteinGrams", "carbsGrams", "fatsGrams"]
+            required: ["recipeName", "calories", "proteinGrams", "carbsGrams", "fatsGrams", "items"]
           }
         }
       });
@@ -177,20 +189,33 @@ Create a healthy recipe ${langString} using some or all of these. Return a JSON 
       let prompt, schema;
       if (type === "FOOD") {
         prompt = `Analyze this food query: "${query}". Estimate the nutritional values accurately.
+                  Also extract or estimate the exact breakdown of items and quantities (like '2 Roti', '150g Rice').
                   Return a JSON object with:
                   - calories: estimated total calories as nearest integer
                   - protein: estimated protein in grams as nearest integer
                   - carbs: estimated carbs in grams as nearest integer
-                  - fats: estimated fat in grams as nearest integer`;
+                  - fats: estimated fat in grams as nearest integer
+                  - items: array of objects with 'name' and 'quantity' strings`;
         schema = {
           type: import_genai.Type.OBJECT,
           properties: {
             calories: { type: import_genai.Type.NUMBER },
             protein: { type: import_genai.Type.NUMBER },
             carbs: { type: import_genai.Type.NUMBER },
-            fats: { type: import_genai.Type.NUMBER }
+            fats: { type: import_genai.Type.NUMBER },
+            items: {
+              type: import_genai.Type.ARRAY,
+              items: {
+                type: import_genai.Type.OBJECT,
+                properties: {
+                  name: { type: import_genai.Type.STRING },
+                  quantity: { type: import_genai.Type.STRING }
+                },
+                required: ["name", "quantity"]
+              }
+            }
           },
-          required: ["calories", "protein", "carbs", "fats"]
+          required: ["calories", "protein", "carbs", "fats", "items"]
         };
       } else {
         prompt = `Analyze this exercise query: "${query}". Estimate the calories burned for an average adult person.

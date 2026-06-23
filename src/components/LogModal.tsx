@@ -9,6 +9,7 @@ export default function LogModal({ type, date, onClose }: { type: "FOOD"|"EXERCI
   const [protein, setProtein] = useState("");
   const [carbs, setCarbs] = useState("");
   const [fats, setFats] = useState("");
+  const [items, setItems] = useState<{name: string, quantity: string}[]>([]);
   const [loadingAi, setLoadingAi] = useState(false);
 
   const handleAiEstimate = async () => {
@@ -28,6 +29,7 @@ export default function LogModal({ type, date, onClose }: { type: "FOOD"|"EXERCI
         if (data.protein !== undefined) setProtein(String(data.protein));
         if (data.carbs !== undefined) setCarbs(String(data.carbs));
         if (data.fats !== undefined) setFats(String(data.fats));
+        if (data.items) setItems(data.items);
       }
     } catch (e: any) {
       console.error(e);
@@ -49,6 +51,7 @@ export default function LogModal({ type, date, onClose }: { type: "FOOD"|"EXERCI
       protein: Number(protein) || 0,
       carbs: Number(carbs) || 0,
       fats: Number(fats) || 0,
+      items: items.length > 0 ? items : undefined,
     });
     onClose();
   };

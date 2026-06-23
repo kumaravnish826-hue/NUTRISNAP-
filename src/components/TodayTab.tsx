@@ -2,7 +2,6 @@ import { format } from "date-fns";
 import DashboardCard from "./DashboardCard";
 import MacrosSection from "./MacrosSection";
 import LogsList from "./LogsList";
-import StepsTracker from "./StepsTracker";
 import { Menu, Moon, Sun, Heart, Smile, Meh, Frown, Coffee } from "lucide-react";
 import { useStore } from "../store";
 
@@ -60,8 +59,6 @@ export default function TodayTab({ trackingData, onOpenProfile }: { trackingData
       <DashboardCard data={trackingData} />
       
       <MacrosSection macros={trackingData.macros} />
-
-      <StepsTracker />
 
       {/* Wellness Check-in */}
       <div className="bg-white rounded-[2rem] p-7 shadow-sm shadow-slate-200/50 border border-slate-100">

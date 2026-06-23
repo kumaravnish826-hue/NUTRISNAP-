@@ -38,6 +38,16 @@ export default function LogsList({ logs }: { logs: LogEntry[] }) {
                   <span>Activity</span>
                 )}
               </div>
+              {log.type === 'FOOD' && log.items && log.items.length > 0 && (
+                <div className="mt-2 text-xs text-gray-600 bg-gray-50 p-2 rounded-lg space-y-1">
+                  {log.items.map((item, idx) => (
+                    <div key={idx} className="flex justify-between items-center">
+                      <span className="text-gray-500">{item.name}</span>
+                      <span className="font-medium text-gray-700">{item.quantity}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="text-right ml-4">

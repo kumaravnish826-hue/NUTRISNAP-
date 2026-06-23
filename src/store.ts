@@ -25,6 +25,7 @@ export interface LogEntry {
   carbs: number;
   fats: number;
   date: string; // YYYY-MM-DD format
+  items?: { name: string; quantity: string }[];
 }
 
 export type FastingProtocol = "12:12" | "14:10" | "16:8" | "18:6" | "20:4";
