@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { X, ChefHat, Loader2, Sparkles, AlertCircle } from "lucide-react";
+import { fetchApi } from "../lib/api";
 
 export default function AiRecipeModal({ onClose, language }: { onClose: () => void, language: "en" | "hi" }) {
   const [ingredients, setIngredients] = useState("");
@@ -12,7 +13,7 @@ export default function AiRecipeModal({ onClose, language }: { onClose: () => vo
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/recipe", {
+      const res = await fetchApi("/api/recipe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ingredients, language }),

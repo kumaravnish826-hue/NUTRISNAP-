@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useStore } from "../store";
 import { X, Sparkles, Loader2 } from "lucide-react";
+import { fetchApi } from "../lib/api";
 
 export default function LogModal({ type, date, onClose }: { type: "FOOD"|"EXERCISE", date: string, onClose: () => void }) {
   const addLog = useStore((s) => s.addLog);
@@ -16,7 +17,7 @@ export default function LogModal({ type, date, onClose }: { type: "FOOD"|"EXERCI
     if (!title.trim()) return;
     setLoadingAi(true);
     try {
-      const res = await fetch("/api/estimate", {
+      const res = await fetchApi("/api/estimate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: title, type }),

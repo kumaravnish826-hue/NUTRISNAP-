@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useStore } from "../store";
 import { Sparkles, Loader2, Target, ArrowRight, Coffee, Sun, Moon, Apple, ChefHat } from "lucide-react";
 import AiRecipeModal from "./AiRecipeModal";
+import { fetchApi } from "../lib/api";
 
 export default function AiCoachTab() {
   const { profile, updateProfileByPlan, setProfile } = useStore();
@@ -18,7 +19,7 @@ export default function AiCoachTab() {
     setProfile({ ...profile, language });
 
     try {
-      const res = await fetch("/api/plan", {
+      const res = await fetchApi("/api/plan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...profile, language }),

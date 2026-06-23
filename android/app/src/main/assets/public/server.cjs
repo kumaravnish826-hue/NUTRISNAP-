@@ -24,6 +24,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 // server.ts
 var import_express = __toESM(require("express"), 1);
 var import_path = __toESM(require("path"), 1);
+var import_cors = __toESM(require("cors"), 1);
 var import_vite = require("vite");
 var import_genai = require("@google/genai");
 var ai = new import_genai.GoogleGenAI({
@@ -37,6 +38,7 @@ var ai = new import_genai.GoogleGenAI({
 async function startServer() {
   const app = (0, import_express.default)();
   const PORT = 3e3;
+  app.use((0, import_cors.default)());
   app.use(import_express.default.json({ limit: "50mb" }));
   app.post("/api/scan", async (req, res) => {
     try {

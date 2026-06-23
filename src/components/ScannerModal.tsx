@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { useStore } from "../store";
 import { format } from "date-fns";
 import { X, Upload, Loader2, Check, Camera } from "lucide-react";
+import { fetchApi } from "../lib/api";
 
 export default function ScannerModal({ onClose }: { onClose: () => void }) {
   const addLog = useStore((s) => s.addLog);
@@ -58,7 +59,7 @@ export default function ScannerModal({ onClose }: { onClose: () => void }) {
     setError("");
     try {
       const base64 = base64DataUrl.split(',')[1];
-      const res = await fetch("/api/scan", {
+      const res = await fetchApi("/api/scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ imageBase64: base64, mimeType }),

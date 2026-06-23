@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useStore, UserProfile, Gender, ActivityLevel } from "../store";
 import { X, Sparkles, Loader2 } from "lucide-react";
+import { fetchApi } from "../lib/api";
 
 export default function ProfileModal({ onClose }: { onClose: () => void }) {
   const { profile, setProfile, updateProfileByPlan } = useStore();
@@ -46,7 +47,7 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
     });
 
     try {
-      const res = await fetch("/api/plan", {
+      const res = await fetchApi("/api/plan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ age, weight, height, targetWeight, gender, activityLevel: activity }),
