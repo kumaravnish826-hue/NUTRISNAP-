@@ -4,7 +4,7 @@ workflows:
     max_build_duration: 120
     instance_type: mac_mini_m1
     environment:
-      node: v20.11.1
+      node: v22.00.0
       java: 17
     triggering:
       events:
