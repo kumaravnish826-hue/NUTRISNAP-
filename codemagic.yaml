@@ -1,10 +1,10 @@
 workflows:
-  android-app-build:
-    name: Build Android APK
+  android-workflow:
+    name: Android Build (APK)
     max_build_duration: 120
-    instance_type: mac_mini_m1
+    instance_type: mac_mini_m2
     environment:
-      node: v22.00.0
+      node: 20
       java: 17
     triggering:
       events:
@@ -16,20 +16,15 @@ workflows:
         script: npm run build
       - name: Sync Capacitor Android
         script: npx cap sync android
+      - name: Set up local.properties
+        script: |
+          echo "sdk.dir=$ANDROID_HOME" > android/local.properties
       - name: Build Android Debug APK
         script: |
           cd android
           chmod +x ./gradlew
           ./gradlew assembleDebug
-          
-      # Uncomment the below lines if you want to build a Release APK in the future
-      # - name: Build Android Release APK
-      #   script: |
-      #     cd android
-      #     chmod +x ./gradlew
-      #     ./gradlew assembleRelease
     
     artifacts:
-      # This captures the generated APK so you can download it from Codemagic
       - android/app/build/outputs/**/*.apk
 
